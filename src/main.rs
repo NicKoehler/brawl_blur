@@ -1,31 +1,38 @@
+extern crate clearscreen;
 use std::{io::Write, path::PathBuf, thread::sleep};
 
 mod blur;
 
-fn clear_screen() {
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-}
-
 fn main() {
-    clear_screen();
-    let mut linux_path: String = String::new();
+    clearscreen::clear().unwrap();
+    let mut unix_path: String = String::new();
     let image_path = match std::env::consts::OS {
         "windows" => std::path::Path::new(
             "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Brawlhalla\\mapArt\\Backgrounds\\",
         ),
+        "linux" => {
+            unix_path.push_str(std::env::var("HOME").unwrap().as_str());
+            unix_path.push_str("/.steam/steam/steamapps/common/Brawlhalla/mapArt/Backgrounds/");
+            std::path::Path::new(&unix_path)
+        }
+        "macos" => {
+            unix_path.push_str(std::env::var("HOME").unwrap().as_str());
+            unix_path.push_str("/Library/Application Support/Steam/steamapps/common/Brawlhalla/Brawlhalla.app/Contents/Resources/mapArt/Backgrounds");
+            std::path::Path::new(&unix_path)
+        }
         _ => {
-            linux_path.push_str(std::env::var("HOME").unwrap().as_str());
-            linux_path.push_str("/.steam/steam/steamapps/common/Brawlhalla/mapArt/Backgrounds/");
-            std::path::Path::new(&linux_path)
+            println!("OS not supported.");
+            sleep(std::time::Duration::from_millis(3000));
+            std::process::exit(1);
         }
     };
 
     let backup_path = image_path.join("BAK");
 
     if !image_path.exists() {
-        println!("Brawlhalla non è installato.");
+        println!("Brawlhalla is not installed.");
         sleep(std::time::Duration::from_millis(3000));
-        return;
+        std::process::exit(1);
     }
 
     // get a vector of all the files in the directory with the extension .png to be blurred as path
@@ -36,19 +43,19 @@ fn main() {
         .map(|e| e.path())
         .collect::<Vec<PathBuf>>();
 
-    let mut scelta = String::new();
-    println!("Brawlhalla Map Blurrer • NicKoehler\n");
+    let mut user_selection = String::new();
+    println!("Brawlhalla Map Blurrer • by NicKoehler\n");
 
     loop {
         print!(
-            "1 • Sfoca lo sfondo delle mappe.\n2 • Ripristina le immagini originali.\n3 • Chiudi il programma.\n\nScegli > "
+            "1 • Blur the background of the maps.\n2 • Restore the original images.\n3 • Exit.\n\nSelect an option > "
         );
         std::io::stdout().flush().unwrap();
-        std::io::stdin().read_line(&mut scelta).unwrap();
+        std::io::stdin().read_line(&mut user_selection).unwrap();
 
-        match scelta.trim() {
+        match user_selection.trim() {
             "1" => {
-                clear_screen();
+                clearscreen::clear().unwrap();
 
                 // if the BAK folder doesn't exist, create it
                 if !&backup_path.exists() {
@@ -67,7 +74,7 @@ fn main() {
                         loop {
 
                             // ask the user for the blurred value
-                            print!("Inserisci il valore di sfocatura > ");
+                            print!("Insert a numeric value for the blur (Recommended: 20) > ");
                             std::io::stdout().flush().unwrap();
 
                             // read the input
@@ -81,17 +88,17 @@ fn main() {
                                 break;
                             }
 
-                            clear_screen();
-                            println!("Valore '{}' non valido, inserisci un numero.", blurred.trim());
+                            clearscreen::clear().unwrap();
+                            println!("'{}' is not a number, insert a number.", blurred.trim());
                             blurred.clear();
 
                         }
 
                         blur::blur_images(&files, sigma, &backup_path);
-                        clear_screen();
-                        println!("Immagini sfocate correttamente.\n");
+                        clearscreen::clear().unwrap();
+                        println!("Images blurred successfully.\n");
                     },
-                    _ => println!("Esistono dei backup precedenti. Ripristina prima di effettuare una nuova sfocatura.\n"),
+                    _ => println!("There are images backups, restore the original images.\n"),
                 };
             }
 
@@ -99,13 +106,13 @@ fn main() {
                 // if the backup folder is empty or doesn't exist, don't do anything
                 match backup_path.read_dir().unwrap().count() {
                     0 => {
-                        clear_screen();
-                        println!("Non ci sono immagini da ripristinare.\n");
+                        clearscreen::clear().unwrap();
+                        println!("There aren't images to restore.\n");
                     }
                     _ => {
                         blur::restore_images(&backup_path);
-                        clear_screen();
-                        println!("Immagini ripristinate correttamente.\n");
+                        clearscreen::clear().unwrap();
+                        println!("Images restored successfully.\n");
                     }
                 };
             }
@@ -115,12 +122,12 @@ fn main() {
             }
 
             _ => {
-                clear_screen();
-                println!("Opzione non valida.\n");
+                clearscreen::clear().unwrap();
+                println!("Invalid option.\n");
             }
         };
 
         // clears the input
-        scelta.clear();
+        user_selection.clear();
     }
 }

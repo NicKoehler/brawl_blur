@@ -21,7 +21,7 @@ pub fn blur_images(images: &Vec<PathBuf>, blur_value: f32, backup_path: &Path) {
 
         let mut data: Vec<[u8; 3]> = Vec::new();
 
-        // iterate over the pixels
+        // iterate over the pixels append them to the data vector
         for y in 0..height {
             for x in 0..width {
                 let pixel = jpg_data.get_pixel(x, y);
@@ -51,8 +51,8 @@ pub fn blur_images(images: &Vec<PathBuf>, blur_value: f32, backup_path: &Path) {
         new_image.save(&image_path).unwrap();
 
         println!(
-            "{:?} -> sfocata correttamente.",
-            &image_path.file_name().unwrap()
+            "{: <22} -> blurred.",
+            &image_path.file_name().unwrap().to_str().unwrap()
         );
     }
 }
@@ -63,6 +63,7 @@ pub fn restore_images(backup_path: &Path) {
 
     // iterate over the images
     for image_path in std::fs::read_dir(backup_path).unwrap() {
+
         // get the path of the image
         let image_path = image_path.unwrap().path();
 
@@ -71,9 +72,6 @@ pub fn restore_images(backup_path: &Path) {
 
         // restore the image
         std::fs::rename(&image_path, parent_folder.join(filename)).unwrap();
-        println!(
-            "{} -> ripristinata correttamente.",
-            image_path.file_name().unwrap().to_str().unwrap()
-        );
+
     }
 }
