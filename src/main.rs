@@ -48,9 +48,7 @@ fn main() {
 
         match scelta.trim() {
             "1" => {
-                // clear_screen();
-
-                println!("{}", backup_path.display());
+                clear_screen();
 
                 // if the BAK folder doesn't exist, create it
                 if !&backup_path.exists() {
