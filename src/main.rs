@@ -8,18 +8,24 @@ fn clear_screen() {
 
 fn main() {
     clear_screen();
-    let mut user_home: String = std::env::var("HOME").unwrap();
+    let mut linux_path: String = String::new();
     let image_path = match std::env::consts::OS {
         "windows" => std::path::Path::new(
             "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Brawlhalla\\mapArt\\Backgrounds\\",
         ),
         _ => {
-            user_home.push_str("/.steam/steam/steamapps/common/Brawlhalla/mapArt/Backgrounds/");
-            std::path::Path::new(&user_home)
+            linux_path.push_str(std::env::var("HOME").unwrap().as_str());
+            linux_path.push_str("/.steam/steam/steamapps/common/Brawlhalla/mapArt/Backgrounds/");
+            std::path::Path::new(&linux_path)
         }
     };
 
     let backup_path = image_path.join("BAK");
+
+    if !image_path.exists() {
+        println!("Brawlhalla non è installato.");
+        return;
+    }
 
     // get a vector of all the files in the directory with the extension .png to be blurred as path
     let files = std::fs::read_dir(image_path)
@@ -41,7 +47,9 @@ fn main() {
 
         match scelta.trim() {
             "1" => {
-                clear_screen();
+                // clear_screen();
+
+                println!("{}", backup_path.display());
 
                 // if the BAK folder doesn't exist, create it
                 if !&backup_path.exists() {
