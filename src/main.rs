@@ -1,4 +1,4 @@
-use std::{io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf, thread::sleep};
 
 mod blur;
 
@@ -24,6 +24,7 @@ fn main() {
 
     if !image_path.exists() {
         println!("Brawlhalla non è installato.");
+        sleep(std::time::Duration::from_millis(3000));
         return;
     }
 
